@@ -61,4 +61,4 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --detach
+          railway up --service "${{ vars.RAILWAY_SERVICE_NAME }}" --detach
