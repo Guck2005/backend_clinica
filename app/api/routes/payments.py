@@ -215,12 +215,13 @@ async def fedapay_webhook(request: Request, db: Session = Depends(get_db)) -> di
     provider = get_fedapay_provider()
 
     # DEBUG – à retirer une fois le problème résolu
+    _webhook_secret = getattr(provider, "webhook_secret", None)
     _log.warning("[FEDAPAY DEBUG] signature reçue : %r", signature)
-    _log.warning("[FEDAPAY DEBUG] secret présent : %s", bool(provider.webhook_secret))
+    _log.warning("[FEDAPAY DEBUG] secret présent : %s", bool(_webhook_secret))
     _log.warning("[FEDAPAY DEBUG] body (50 premiers octets) : %r", raw_body[:50])
-    if provider.webhook_secret and signature:
+    if _webhook_secret and signature:
         expected = _hmac.new(
-            provider.webhook_secret.encode("utf-8"),
+            _webhook_secret.encode("utf-8"),
             raw_body,
             hashlib.sha256,
         ).hexdigest()
