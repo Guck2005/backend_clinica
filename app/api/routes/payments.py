@@ -214,8 +214,9 @@ async def fedapay_webhook(request: Request, db: Session = Depends(get_db)) -> di
     signature = request.headers.get("X-FEDAPAY-SIGNATURE")
     provider = get_fedapay_provider()
 
+    _webhook_secret = getattr(provider, "webhook_secret", None)
     _log.warning(f"[FEDAPAY DEBUG v2] signature reçue : {signature}")
-    _log.warning(f"[FEDAPAY DEBUG v2] secret présent : {bool(provider.webhook_secret)}")
+    _log.warning(f"[FEDAPAY DEBUG v2] secret présent : {bool(_webhook_secret)}")
 
     if not provider.verify_webhook_signature(raw_body, signature):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid FedaPay signature")
