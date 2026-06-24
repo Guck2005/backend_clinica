@@ -207,9 +207,25 @@ def update_cheque_payment_status(
 
 @router.post("/fedapay/webhook", status_code=status.HTTP_202_ACCEPTED)
 async def fedapay_webhook(request: Request, db: Session = Depends(get_db)) -> dict[str, str]:
+    import hashlib, hmac as _hmac, logging
+    _log = logging.getLogger("fedapay.webhook")
+
     raw_body = await request.body()
     signature = request.headers.get("X-FEDAPAY-SIGNATURE")
     provider = get_fedapay_provider()
+
+    # DEBUG – à retirer une fois le problème résolu
+    _log.warning("[FEDAPAY DEBUG] signature reçue : %r", signature)
+    _log.warning("[FEDAPAY DEBUG] secret présent : %s", bool(provider.webhook_secret))
+    _log.warning("[FEDAPAY DEBUG] body (50 premiers octets) : %r", raw_body[:50])
+    if provider.webhook_secret and signature:
+        expected = _hmac.new(
+            provider.webhook_secret.encode("utf-8"),
+            raw_body,
+            hashlib.sha256,
+        ).hexdigest()
+        _log.warning("[FEDAPAY DEBUG] signature attendue : %r", expected)
+
     if not provider.verify_webhook_signature(raw_body, signature):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid FedaPay signature")
 
