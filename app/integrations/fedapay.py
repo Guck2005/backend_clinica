@@ -172,13 +172,33 @@ class FedaPayProvider:
         if not self.webhook_secret or not signature_header:
             return False
 
+        header = signature_header.strip()
+
+        if "t=" in header and "s=" in header:
+            try:
+                parts = dict(part.split("=", 1) for part in header.split(",") if "=" in part)
+                t = parts.get("t")
+                s = parts.get("s")
+                if t and s:
+                    signed_payload = f"{t}.{raw_body.decode('utf-8')}".encode("utf-8")
+                    expected = hmac.new(
+                        self.webhook_secret.encode("utf-8"),
+                        signed_payload,
+                        hashlib.sha256,
+                    ).hexdigest()
+                    if hmac.compare_digest(expected, s):
+                        return True
+            except Exception:
+                pass
+
+        # Fallback pour l'ancien format / payload pur
         expected = hmac.new(
             self.webhook_secret.encode("utf-8"),
             raw_body,
             hashlib.sha256,
         ).hexdigest()
 
-        provided = signature_header.strip()
+        provided = header
         if provided.startswith("sha256="):
             provided = provided.split("=", 1)[1]
         return hmac.compare_digest(expected, provided)
