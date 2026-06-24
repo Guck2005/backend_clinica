@@ -186,6 +186,8 @@ class FedaPayProvider:
                         signed_payload,
                         hashlib.sha256,
                     ).hexdigest()
+                    import logging
+                    logging.getLogger("fedapay.webhook").warning(f"[FEDAPAY DEBUG v2] Expected (t+s): {expected} | Provided: {s}")
                     if hmac.compare_digest(expected, s):
                         return True
             except Exception:
