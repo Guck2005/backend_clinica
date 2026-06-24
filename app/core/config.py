@@ -13,7 +13,7 @@ def normalize_database_url(url: str) -> str:
 class Settings:
     def __init__(self) -> None:
         self.database_url = normalize_database_url(
-            os.getenv("DATABASE_URL", "sqlite:///./caissetrace.db")
+            os.getenv("DATABASE_URL", "postgresql://postgres:uUNCHwbvSDoXXRlqVnyxeyXDJIygQGlk@postgres.railway.internal:5432/railway")
         )
         self.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-me")
         self.access_token_minutes = int(os.getenv("ACCESS_TOKEN_MINUTES", "720"))
